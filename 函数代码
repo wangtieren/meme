@@ -1,0 +1,49 @@
+from keras.utils import np_utils
+from keras.models import Sequential
+from keras.layers import Dropout,Dense,Activation,Convolution2D, MaxPooling2D, Flatten
+import numpy as np
+import pandas as pd
+test=pd.read_csv(r"C:\Users\Lenovo\Desktop\xinjian\test.csv")
+test=np.array(test)
+ 
+data=pd.read_csv(r"C:\Users\Lenovo\Desktop\xinjian\train.csv")
+train_Labels=data['label']
+del(data['label'])
+train_Data=data/255
+train_Labels = np_utils.to_categorical(train_Labels, num_classes=10)
+data=np.array(train_Data)
+train_Data=np.array(train_Data).reshape(42000,1,28,28)
+test=test.reshape(28000,1,28,28)
+###预处理
+ 
+def Cmodel():  
+    #create model  
+    model = Sequential()  
+    model.add(Convolution2D(nb_filter=32,nb_row=5,nb_col=5,border_mode='same',dim_ordering='th',input_shape=(1,28,28),activation='relu'))  
+    model.add(MaxPooling2D(pool_size=(2,2),strides=(2, 2),border_mode='same'))  
+    
+    model.add(Convolution2D(64,5,5,activation='relu'))  
+    model.add(MaxPooling2D(pool_size=(2,2),border_mode='same'))  
+    model.add(Dropout(0.2))  
+    
+    model.add(Flatten())  
+    model.add(Dense(1024,activation='relu'))  
+    
+    model.add(Dense(50,activation='relu'))  
+    
+    model.add(Dense(10,activation='softmax'))  
+    #Compile model  
+    model.compile(loss='categorical_crossentropy',optimizer='adam',metrics=['accuracy'])  
+    return model 
+ 
+    
+model = Cmodel()  
+model.fit(train_Data,train_Labels,nb_epoch=10,batch_size=100) 
+ 
+ 
+######新模型
+predict=model.predict(test)
+predict=predict.argmax(1)
+predict=pd.DataFrame(predict)
+predict.to_csv('result.csv')
+ 
